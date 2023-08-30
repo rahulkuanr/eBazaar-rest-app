@@ -7,6 +7,7 @@ const Product = require("../models/product");
 
 router.get("/", (req, res, next) => {
   Order.find()
+    .populate("product", "name")
     .exec()
     .then((docs) => {
       res.status(200).json({
@@ -14,8 +15,10 @@ router.get("/", (req, res, next) => {
         orders: docs.map((doc) => {
           return {
             _id: doc._id,
-            product: doc.product,
-            product_url: `http://localhost:3000/products/${doc.product}`,
+            product: {
+              data: doc.product,
+              url: `http://localhost:3000/products/${doc.product._id}`,
+            },
             quantity: doc.quantity,
             request: {
               type: "GET",
@@ -71,14 +74,17 @@ router.post("/", (req, res, next) => {
 
 router.get("/:orderId", (req, res, next) => {
   Order.findById(req.params.orderId)
+    .populate("product", "name price")
     .exec()
     .then((order) => {
       if (order) {
         res.status(200).json({
           order: {
             _id: order._id,
-            product: order.product,
-            productUrl: `http://localhost:3000/products/${order.product}`,
+            product: {
+              data: order.product,
+              url: `http://localhost:3000/products/${order.product._id}`,
+            },
             quantity: order.quantity,
           },
           request: {
@@ -99,29 +105,29 @@ router.get("/:orderId", (req, res, next) => {
 });
 
 router.delete("/:orderId", (req, res, next) => {
-    const id = req.params.orderId;
-    Order.deleteOne({ _id: id })
-      .exec()
-      .then((result) => {
-        if (result.deletedCount === 1) {
-          res.status(200).json({
-            message: "Order Deleted",
-            request: {
-              type: "POST",
-              description: "Create a new order",
-              url: `http://localhost:3000/orders`,
-              requestBody: { product: "ID", quantity: "Number" },
-            },
-          });
-        } else {
-          res
-            .status(404)
-            .json({ message: "No valid entry found for provided ID" });
-        }
-      })
-      .catch((err) => {
-        res.status(500).json({ error: err });
-      });
+  const id = req.params.orderId;
+  Order.deleteOne({ _id: id })
+    .exec()
+    .then((result) => {
+      if (result.deletedCount === 1) {
+        res.status(200).json({
+          message: "Order Deleted",
+          request: {
+            type: "POST",
+            description: "Create a new order",
+            url: `http://localhost:3000/orders`,
+            requestBody: { product: "ID", quantity: "Number" },
+          },
+        });
+      } else {
+        res
+          .status(404)
+          .json({ message: "No valid entry found for provided ID" });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({ error: err });
+    });
 });
 
 module.exports = router;
