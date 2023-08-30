@@ -39,7 +39,6 @@ router.post("/", (req, res, next) => {
   product
     .save()
     .then((result) => {
-      console.log(result);
       res.status(201).json({
         message: "Product Created",
         createdProduct: {
@@ -54,7 +53,6 @@ router.post("/", (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
       res.status(500).json({ error: err });
     });
 });
@@ -65,7 +63,6 @@ router.get("/:productId", (req, res, next) => {
     .select("name price _id")
     .exec()
     .then((doc) => {
-      console.log(doc);
       if (doc) {
         res.status(200).json({
           product: doc,
@@ -82,7 +79,6 @@ router.get("/:productId", (req, res, next) => {
       }
     })
     .catch((err) => {
-      console.log(err);
       res.status(500).json({ error: err });
     });
 });
@@ -96,7 +92,6 @@ router.patch("/:productId", (req, res, next) => {
   Product.updateOne({ _id: id }, { $set: updateOps })
     .exec()
     .then((result) => {
-      console.log(result);
       if (result.matchedCount === 1 && result.modifiedCount === 1) {
         res.status(200).json({
           message: "Product Updated",
@@ -129,12 +124,11 @@ router.delete("/:productId", (req, res, next) => {
   Product.deleteOne({ _id: id })
     .exec()
     .then((result) => {
-      console.log(result);
       if (result.deletedCount === 1) {
         res.status(200).json({
           message: "Product Deleted",
           request: {
-            type: "GET",
+            type: "POST",
             description: "Create a new product",
             url: `http://localhost:3000/products`,
             requestBody: { name: "String", price: "Number" },
